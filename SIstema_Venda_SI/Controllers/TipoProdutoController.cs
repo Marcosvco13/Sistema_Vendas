@@ -31,7 +31,6 @@ namespace SIstema_Venda_SI.Controllers
         public async Task<IActionResult> Create(TipoProduto tipoProduto)
         {
             var tipoProdutoSalvo = await _ServiceTipoProduto.oRepositoryTipoProduto.IncluirAsync(tipoProduto);
-
             return View(tipoProdutoSalvo);
         }
 
@@ -68,8 +67,6 @@ namespace SIstema_Venda_SI.Controllers
         {
             var tipoProduto = await _ServiceTipoProduto.oRepositoryTipoProduto.SelecionarPkAsync(id);
             return View(tipoProduto);
-
-
         }
     }
 }

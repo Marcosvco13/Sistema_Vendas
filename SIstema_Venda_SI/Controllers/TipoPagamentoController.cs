@@ -1,56 +1,50 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sistema_Venda_SI.Model.Models;
+using Sistema_Venda_SI.Model.Service;
 
 namespace SIstema_Venda_SI.Controllers
 {
     public class TipoPagamentoController : Controller
     {
-        private readonly DBSISTEMASContext _context;
+        private ServiceTipoPagamento _ServiceTipoPagamento;
 
         public TipoPagamentoController(DBSISTEMASContext context)
         {
-            _context = context;
+            _ServiceTipoPagamento = new ServiceTipoPagamento();
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var listaTipoPagamento = _context.TipoPagamento.ToList();
-
+            var listaTipoPagamento = await _ServiceTipoPagamento.oRepositoryTipoPagamento.SelecionarTodosAsync();
             return View(listaTipoPagamento);
         }
 
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            TipoPagamento tipoPagamento = new TipoPagamento();
-            //outra maneira de se consultar uma informação do nosso modelo.
-            tipoPagamento = ( from p in _context.TipoPagamento where p.TpgCodigo == id select p ).FirstOrDefault();
+            var tipoPagamento = await _ServiceTipoPagamento.oRepositoryTipoPagamento.SelecionarPkAsync(id);
             return View(tipoPagamento);
 
         }
 
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var tipoPagamento = _context.TipoPagamento.FirstOrDefault(x => x.TpgCodigo == id);
+            var tipoPagamento = await _ServiceTipoPagamento.oRepositoryTipoPagamento.SelecionarPkAsync(id);
             return View(tipoPagamento);
         }
 
         [HttpPost]
-        public IActionResult Edit(TipoPagamento tipoPagamento)
+        public async Task<IActionResult> Edit(TipoPagamento tipoPagamento)
         {
             if (ModelState.IsValid)
             {
-
-     
-
-                _context.Entry(tipoPagamento).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
-                _context.SaveChanges();
-                return View(tipoPagamento);
-
+                var tipoPagamentoSalvo = await _ServiceTipoPagamento.oRepositoryTipoPagamento.AlterarAsync(tipoPagamento);
+                return View(tipoPagamentoSalvo);
             }
             ViewData["MensagemErro"] = "Ocorreu um erro";
-            return View(tipoPagamento);
+            return View();
         }
+
         [HttpGet]
         public IActionResult Create()
         {
@@ -58,26 +52,21 @@ namespace SIstema_Venda_SI.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(TipoPagamento tipoPagamento) 
+        public async Task<IActionResult> Create(TipoPagamento tipoPagamento) 
         { 
             if (ModelState.IsValid)
             {
-                _context.Entry(tipoPagamento).State = Microsoft.EntityFrameworkCore.EntityState.Added;
-                _context.SaveChanges();
+                var tipoPagamentoSalvo = await _ServiceTipoPagamento.oRepositoryTipoPagamento.IncluirAsync(tipoPagamento);
+                return View(tipoPagamentoSalvo);
             }
             ViewData["MensagemErro"] = "Ocorreu um erro";
-            return View(tipoPagamento);
-
+            return View();
         }
 
-        public IActionResult Delete (int id)
+        public async Task<IActionResult> Delete (int id)
         {
-
-            var tipoPagamento = _context.TipoPagamento.FirstOrDefault(x => x.TpgCodigo == id);
-            _context.Entry(tipoPagamento).State = EntityState.Deleted; 
-            _context.SaveChanges();
+            await _ServiceTipoPagamento.oRepositoryTipoPagamento.ExcluirAsync(id);
             return RedirectToAction("Index");
-
         }
     }
 }

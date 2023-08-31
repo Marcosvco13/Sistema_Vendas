@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Sistema_Venda_SI.Model.Models;
+using Sistema_Venda_SI.Model.Service;
 using SIstema_Venda_SI.ViewModel;
 using SQLitePCL;
 
@@ -7,10 +8,10 @@ namespace SIstema_Venda_SI.Controllers
 {
     public class ClienteController : Controller
     {
-        private readonly DBSISTEMASContext _context;
+        private ServiceCliente _ServiceCliente;
         public ClienteController(DBSISTEMASContext context)
         {
-            _context = context;
+            _ServiceCliente = new ServiceCliente();
         }
 
         public IActionResult Index()
@@ -34,7 +35,7 @@ namespace SIstema_Venda_SI.Controllers
 
         }
         [HttpPost]
-        public IActionResult Create(ClienteVM clienteVM)
+        public async Task<IActionResult> Create(ClienteVM clienteVM)
         {
             //criamos o objeto cliente e atribuimos os valores de seus atributos a partir do objeto clienteVM que veio da view
             var cliente = new Cliente();
@@ -60,13 +61,11 @@ namespace SIstema_Venda_SI.Controllers
                 EndNumero = clienteVM.Numero,
 
             };
-            _context.Entry(cliente).State = Microsoft.EntityFrameworkCore.EntityState.Added;
-            _context.SaveChanges();
-            endereco.EndCodigoCliente = cliente.CliCodigo;
-            _context.Entry(endereco).State = Microsoft.EntityFrameworkCore.EntityState.Added;
-            _context.SaveChanges();
+            cliente = await _ServiceCliente.oRepositoryCliente.IncluirAsync(cliente);
+            endereco = await _ServiceCliente.oRepositoryEndereco.IncluirAsync(endereco);
 
-            return View();
+            return View(cliente);
+            return View(endereco);
         }
     }
 }
